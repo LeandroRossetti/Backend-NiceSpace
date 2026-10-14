@@ -1,0 +1,22 @@
+services:
+  db:
+    # Flyway 10.22.0 soporta PostgreSQL 16 y 17. El modulo flyway-database-postgresql
+    # es obligatorio a partir de Flyway 10.x (ya incluido en el pom.xml).
+    image: postgres:16-alpine
+    container_name: cowork-db
+    environment:
+      POSTGRES_DB: cowork
+      POSTGRES_USER: cowork
+      POSTGRES_PASSWORD: cowork
+    ports:
+      - "5432:5432"
+    volumes:
+      - cowork_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cowork -d cowork"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  cowork_pgdata:
