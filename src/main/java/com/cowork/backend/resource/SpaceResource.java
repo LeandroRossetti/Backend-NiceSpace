@@ -1,6 +1,8 @@
 package com.cowork.backend.resource;
 
+import com.cowork.backend.workspace.Floor;
 import com.cowork.backend.workspace.Workspace;
+import jakarta.persistence.Column;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +19,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "resources")
@@ -35,6 +39,10 @@ public class SpaceResource {
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "floor_id", nullable = false)
+    private Floor floor;
+
     @Column(nullable = false)
     private String nombre;
 
@@ -47,4 +55,16 @@ public class SpaceResource {
 
     @Column(nullable = false)
     private Boolean active;
+
+    @Column(name = "hourly_price", precision = 12, scale = 2)
+    private BigDecimal hourlyPrice;
+
+    @Column(name = "daily_price", precision = 12, scale = 2)
+    private BigDecimal dailyPrice;
+
+    @Column(name = "monthly_price", precision = 12, scale = 2)
+    private BigDecimal monthlyPrice;
+
+    @Column(nullable = false, length = 3)
+    private String currency;
 }

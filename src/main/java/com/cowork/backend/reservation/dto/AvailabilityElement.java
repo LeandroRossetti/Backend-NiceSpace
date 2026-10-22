@@ -2,6 +2,8 @@ package com.cowork.backend.reservation.dto;
 
 import com.cowork.backend.resource.ResourceType;
 
+import java.math.BigDecimal;
+
 public record AvailabilityElement(
         Long resourceId,
         String nombre,
@@ -11,6 +13,11 @@ public record AvailabilityElement(
         Double y,
         Double w,
         Double h,
-        boolean available
+        Double rotation,
+        boolean available,
+        BigDecimal hourlyPrice,
+        BigDecimal dailyPrice,
+        BigDecimal monthlyPrice,
+        String currency
 ) {
 }

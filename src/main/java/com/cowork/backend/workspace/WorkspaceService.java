@@ -17,10 +17,12 @@ import java.util.List;
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
+    private final FloorRepository floorRepository;
     private final AuthHelper authHelper;
 
-    public WorkspaceService(WorkspaceRepository workspaceRepository, AuthHelper authHelper) {
+    public WorkspaceService(WorkspaceRepository workspaceRepository, FloorRepository floorRepository, AuthHelper authHelper) {
         this.workspaceRepository = workspaceRepository;
+        this.floorRepository = floorRepository;
         this.authHelper = authHelper;
     }
 
@@ -53,7 +55,14 @@ public class WorkspaceService {
                 .owner(user)
                 .mapStructure(null)
                 .build();
-        return WorkspaceDto.from(workspaceRepository.save(workspace));
+        Workspace saved = workspaceRepository.save(workspace);
+        floorRepository.save(Floor.builder()
+                .workspace(saved)
+                .nombre("Piso 1")
+                .levelOrder(1)
+                .mapStructure("{\"elements\":[]}")
+                .build());
+        return WorkspaceDto.from(saved);
     }
 
     @Transactional
@@ -61,6 +70,10 @@ public class WorkspaceService {
         Workspace workspace = findOrThrow(id);
         assertOwner(workspace);
         workspace.setMapStructure(request.mapStructure());
+        floorRepository.findFirstByWorkspaceIdOrderByLevelOrderAsc(id).ifPresent(floor -> {
+            floor.setMapStructure(request.mapStructure());
+            floorRepository.save(floor);
+        });
         return WorkspaceDto.from(workspaceRepository.save(workspace));
     }
 

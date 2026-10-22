@@ -13,6 +13,8 @@ public interface SpaceResourceRepository extends JpaRepository<SpaceResource, Lo
 
     List<SpaceResource> findByWorkspaceIdOrderByIdAsc(Long workspaceId);
 
+    List<SpaceResource> findByFloorIdOrderByIdAsc(Long floorId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select sr from SpaceResource sr where sr.id = :id")
     Optional<SpaceResource> findByIdForUpdate(@Param("id") Long id);

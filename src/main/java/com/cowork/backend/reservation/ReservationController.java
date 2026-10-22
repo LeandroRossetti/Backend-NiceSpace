@@ -52,14 +52,15 @@ public class ReservationController {
     @GetMapping("/workspaces/{workspaceId}/availability")
     public AvailabilityResponse availability(@PathVariable Long workspaceId,
                                              @RequestParam String start,
-                                             @RequestParam String end) {
+                                             @RequestParam String end,
+                                             @RequestParam(required = false) Long floorId) {
         try {
             Instant startTime = Instant.parse(start);
             Instant endTime = Instant.parse(end);
             if (!endTime.isAfter(startTime)) {
                 throw new BadRequestException("La hora de fin debe ser posterior a la hora de inicio");
             }
-            return reservationService.availability(workspaceId, startTime, endTime);
+            return reservationService.availability(workspaceId, floorId, startTime, endTime);
         } catch (DateTimeParseException e) {
             throw new BadRequestException("Formato de fecha invalido. Usar ISO-8601 (ej. 2026-09-24T10:00:00Z)");
         }

@@ -19,6 +19,8 @@ import com.cowork.backend.team.TeamRepository;
 import com.cowork.backend.user.User;
 import com.cowork.backend.workspace.Workspace;
 import com.cowork.backend.workspace.WorkspaceRepository;
+import com.cowork.backend.workspace.Floor;
+import com.cowork.backend.workspace.FloorRepository;
 import com.cowork.backend.workspace.dto.MapElement;
 import com.cowork.backend.workspace.dto.MapStructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +44,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final SpaceResourceRepository resourceRepository;
     private final WorkspaceRepository workspaceRepository;
+    private final FloorRepository floorRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final AuthHelper authHelper;
@@ -50,6 +53,7 @@ public class ReservationService {
     public ReservationService(ReservationRepository reservationRepository,
                               SpaceResourceRepository resourceRepository,
                               WorkspaceRepository workspaceRepository,
+                              FloorRepository floorRepository,
                               TeamRepository teamRepository,
                               TeamMemberRepository teamMemberRepository,
                               AuthHelper authHelper,
@@ -57,6 +61,7 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
         this.resourceRepository = resourceRepository;
         this.workspaceRepository = workspaceRepository;
+        this.floorRepository = floorRepository;
         this.teamRepository = teamRepository;
         this.teamMemberRepository = teamMemberRepository;
         this.authHelper = authHelper;
@@ -162,12 +167,21 @@ public class ReservationService {
         return ReservationDto.from(reservationRepository.save(reservation));
     }
 
-    public AvailabilityResponse availability(Long workspaceId, Instant start, Instant end) {
+    public AvailabilityResponse availability(Long workspaceId, Long floorId, Instant start, Instant end) {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new NotFoundException("Workspace no encontrado"));
 
-        MapStructure structure = parseMap(workspace.getMapStructure());
-        Map<Long, SpaceResource> resources = resourceRepository.findByWorkspaceIdOrderByIdAsc(workspaceId).stream()
+        Floor floor = floorId == null
+                ? floorRepository.findFirstByWorkspaceIdOrderByLevelOrderAsc(workspaceId)
+                    .orElseThrow(() -> new NotFoundException("El edificio no tiene pisos configurados"))
+                : floorRepository.findById(floorId)
+                    .filter(candidate -> candidate.getWorkspace().getId().equals(workspaceId))
+                    .orElseThrow(() -> new NotFoundException("Piso no encontrado en este edificio"));
+
+        MapStructure structure = parseMap(floor.getMapStructure() == null
+                ? workspace.getMapStructure()
+                : floor.getMapStructure());
+        Map<Long, SpaceResource> resources = resourceRepository.findByFloorIdOrderByIdAsc(floor.getId()).stream()
                 .collect(Collectors.toMap(SpaceResource::getId, Function.identity()));
         Set<Long> occupied = new HashSet<>(reservationRepository.findOccupiedResourceIds(
                 workspaceId, ReservationStatus.CANCELADA, start, end));
@@ -179,21 +193,22 @@ public class ReservationService {
                     boolean available = Boolean.TRUE.equals(r.getActive()) && !occupied.contains(r.getId());
                     return new AvailabilityElement(
                             r.getId(), r.getNombre(), r.getCapacidad(), r.getTipo(),
-                            e.x(), e.y(), e.w(), e.h(), available);
+                            e.x(), e.y(), e.w(), e.h(), e.rotation() == null ? 0.0 : e.rotation(), available,
+                            r.getHourlyPrice(), r.getDailyPrice(), r.getMonthlyPrice(), r.getCurrency());
                 })
                 .toList();
 
-        return new AvailabilityResponse(workspace.getId(), workspace.getNombre(), elements);
+        return new AvailabilityResponse(workspace.getId(), workspace.getNombre(), floor.getId(), floor.getNombre(), elements, structure.objects());
     }
 
     private MapStructure parseMap(String json) {
         if (json == null || json.isBlank()) {
-            return new MapStructure(List.of());
+            return new MapStructure(List.of(), List.of());
         }
         try {
             return objectMapper.readValue(json, MapStructure.class);
         } catch (JsonProcessingException e) {
-            return new MapStructure(List.of());
+            return new MapStructure(List.of(), List.of());
         }
     }
 }
