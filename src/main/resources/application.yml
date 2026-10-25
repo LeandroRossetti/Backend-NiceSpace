@@ -29,3 +29,6 @@ app:
     expiration-ms: 86400000
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  google:
+    # OAuth 2.0 Web Client ID. Blank disables Google login.
+    client-id: ${APP_GOOGLE_CLIENT_ID:}

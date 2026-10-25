@@ -1,6 +1,7 @@
 package com.cowork.backend.user;
 
 import com.cowork.backend.user.dto.AuthResponse;
+import com.cowork.backend.user.dto.GoogleLoginRequest;
 import com.cowork.backend.user.dto.LoginRequest;
 import com.cowork.backend.user.dto.RegisterRequest;
 import jakarta.validation.Valid;
@@ -29,5 +30,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> google(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request));
     }
 }

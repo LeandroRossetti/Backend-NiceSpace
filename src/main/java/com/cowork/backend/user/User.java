@@ -33,8 +33,11 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
+
+    @Column(name = "google_sub", unique = true)
+    private String googleSub;
 
     @Column(nullable = false)
     private String nombre;
