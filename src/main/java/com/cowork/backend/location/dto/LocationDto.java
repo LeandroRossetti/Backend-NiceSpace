@@ -18,6 +18,7 @@ public record LocationDto(
         String description,
         String contactEmail,
         String contactPhone,
+        String imageUrl,
         Boolean isActive,
         Instant createdAt
 ) {
@@ -37,6 +38,7 @@ public record LocationDto(
                 location.getDescription(),
                 location.getContactEmail(),
                 location.getContactPhone(),
+                location.getImageUrl(),
                 location.getIsActive(),
                 location.getCreatedAt());
     }

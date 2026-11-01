@@ -35,6 +35,8 @@ public record CreateLocationRequest(
         @Size(max = 50, message = "El teléfono no puede superar los 50 caracteres")
         String contactPhone,
 
+        String imageUrl,
+
         Boolean isActive
 ) {
 }
