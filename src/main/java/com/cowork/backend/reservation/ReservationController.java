@@ -39,9 +39,9 @@ public class ReservationController {
         return reservationService.mine();
     }
 
-    @GetMapping("/reservations/workspace/{workspaceId}")
-    public List<ReservationDto> forWorkspace(@PathVariable Long workspaceId) {
-        return reservationService.forWorkspace(workspaceId);
+    @GetMapping("/reservations/location/{locationId}")
+    public List<ReservationDto> forLocation(@PathVariable Long locationId) {
+        return reservationService.forLocation(locationId);
     }
 
     @PostMapping("/reservations/{id}/cancel")
@@ -49,8 +49,8 @@ public class ReservationController {
         return reservationService.cancel(id);
     }
 
-    @GetMapping("/workspaces/{workspaceId}/availability")
-    public AvailabilityResponse availability(@PathVariable Long workspaceId,
+    @GetMapping("/locations/{locationId}/availability")
+    public AvailabilityResponse availability(@PathVariable Long locationId,
                                              @RequestParam String start,
                                              @RequestParam String end,
                                              @RequestParam(required = false) Long floorId) {
@@ -60,9 +60,9 @@ public class ReservationController {
             if (!endTime.isAfter(startTime)) {
                 throw new BadRequestException("La hora de fin debe ser posterior a la hora de inicio");
             }
-            return reservationService.availability(workspaceId, floorId, startTime, endTime);
+            return reservationService.availability(locationId, floorId, startTime, endTime);
         } catch (DateTimeParseException e) {
-            throw new BadRequestException("Formato de fecha invalido. Usar ISO-8601 (ej. 2026-09-24T10:00:00Z)");
+            throw new BadRequestException("Formato de fecha inválido. Usar ISO-8601 (ej. 2026-09-24T10:00:00Z)");
         }
     }
 }

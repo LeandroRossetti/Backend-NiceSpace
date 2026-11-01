@@ -27,15 +27,15 @@ public class FloorController {
         this.floorService = floorService;
     }
 
-    @GetMapping("/workspaces/{workspaceId}/floors")
-    public List<FloorDto> list(@PathVariable Long workspaceId) {
-        return floorService.list(workspaceId);
+    @GetMapping("/locations/{locationId}/floors")
+    public List<FloorDto> list(@PathVariable Long locationId) {
+        return floorService.list(locationId);
     }
 
-    @PostMapping("/workspaces/{workspaceId}/floors")
-    public ResponseEntity<FloorDto> create(@PathVariable Long workspaceId,
+    @PostMapping("/locations/{locationId}/floors")
+    public ResponseEntity<FloorDto> create(@PathVariable Long locationId,
                                            @Valid @RequestBody CreateFloorRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(floorService.create(workspaceId, request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(floorService.create(locationId, request));
     }
 
     @PutMapping("/floors/{floorId}")

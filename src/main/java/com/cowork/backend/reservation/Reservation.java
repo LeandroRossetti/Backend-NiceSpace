@@ -1,8 +1,8 @@
 package com.cowork.backend.reservation;
 
-import com.cowork.backend.resource.SpaceResource;
 import com.cowork.backend.team.Team;
 import com.cowork.backend.user.User;
+import com.cowork.backend.workspace.Workspace;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -37,14 +38,21 @@ public class Reservation {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "resource_id", nullable = false)
-    private SpaceResource resource;
+    @JoinColumn(name = "workspace_id", nullable = false)
+    private Workspace workspace;
 
     @Column(name = "start_time", nullable = false)
     private Instant startTime;
 
     @Column(name = "end_time", nullable = false)
     private Instant endTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rental_type", nullable = false)
+    private RentalType rentalType;
+
+    @Column(name = "total_price", precision = 12, scale = 2)
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

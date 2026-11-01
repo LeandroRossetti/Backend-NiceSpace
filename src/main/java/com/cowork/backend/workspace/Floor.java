@@ -1,5 +1,6 @@
 package com.cowork.backend.workspace;
 
+import com.cowork.backend.location.Location;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,8 +32,8 @@ public class Floor {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "workspace_id", nullable = false)
-    private Workspace workspace;
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
     @Column(nullable = false)
     private String nombre;

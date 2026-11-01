@@ -7,11 +7,11 @@ import java.util.Optional;
 
 public interface FloorRepository extends JpaRepository<Floor, Long> {
 
-    List<Floor> findByWorkspaceIdOrderByLevelOrderAsc(Long workspaceId);
+    List<Floor> findByLocationIdOrderByLevelOrderAsc(Long locationId);
 
-    Optional<Floor> findFirstByWorkspaceIdOrderByLevelOrderAsc(Long workspaceId);
+    Optional<Floor> findFirstByLocationIdOrderByLevelOrderAsc(Long locationId);
 
-    Optional<Floor> findTopByWorkspaceIdOrderByLevelOrderDesc(Long workspaceId);
+    Optional<Floor> findTopByLocationIdOrderByLevelOrderDesc(Long locationId);
 
-    long countByWorkspaceId(Long workspaceId);
+    long countByLocationId(Long locationId);
 }
