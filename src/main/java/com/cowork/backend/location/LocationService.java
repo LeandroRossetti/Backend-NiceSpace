@@ -61,6 +61,7 @@ public class LocationService {
                 .description(request.description())
                 .contactEmail(request.contactEmail())
                 .contactPhone(request.contactPhone())
+                .imageUrl(request.imageUrl())
                 .isActive(request.isActive() == null || request.isActive())
                 .mapStructure(null)
                 .build();
@@ -88,6 +89,7 @@ public class LocationService {
         location.setDescription(request.description());
         location.setContactEmail(request.contactEmail());
         location.setContactPhone(request.contactPhone());
+        location.setImageUrl(request.imageUrl());
         if (request.isActive() != null) {
             location.setIsActive(request.isActive());
         }

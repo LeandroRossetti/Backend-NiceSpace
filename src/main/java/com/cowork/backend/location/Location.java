@@ -73,6 +73,9 @@ public class Location {
     @Column(name = "contact_phone")
     private String contactPhone;
 
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
