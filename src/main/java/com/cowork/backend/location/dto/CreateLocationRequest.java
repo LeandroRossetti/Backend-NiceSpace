@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record CreateLocationRequest(
         @NotBlank(message = "El nombre es obligatorio")
         String nombre,
@@ -37,6 +39,8 @@ public record CreateLocationRequest(
 
         String imageUrl,
 
-        Boolean isActive
+        Boolean isActive,
+
+        List<Long> amenityIds
 ) {
 }

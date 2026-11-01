@@ -1,10 +1,8 @@
 package com.cowork.backend.reservation.dto;
 
-import com.cowork.backend.amenity.dto.AmenityDto;
 import com.cowork.backend.workspace.WorkspaceType;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public record AvailabilityElement(
         Long workspaceId,
@@ -23,7 +21,6 @@ public record AvailabilityElement(
         Integer maxHours,
         Integer maxDays,
         Integer maxMonths,
-        String currency,
-        List<AmenityDto> amenities
+        String currency
 ) {
 }

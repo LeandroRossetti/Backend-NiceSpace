@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public record WorkspaceUpdateRequest(
         @NotBlank(message = "El nombre es obligatorio")
@@ -42,8 +41,6 @@ public record WorkspaceUpdateRequest(
 
         Boolean isActive,
 
-        Long floorId,
-
-        List<Long> amenityIds
+        Long floorId
 ) {
 }

@@ -1,5 +1,6 @@
 package com.cowork.backend.reservation;
 
+import com.cowork.backend.payment.Payment;
 import com.cowork.backend.team.Team;
 import com.cowork.backend.user.User;
 import com.cowork.backend.workspace.Workspace;
@@ -13,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -65,6 +67,9 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @OneToOne(mappedBy = "reservation")
+    private Payment payment;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

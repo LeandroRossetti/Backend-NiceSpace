@@ -4,7 +4,6 @@ import com.cowork.backend.common.BadRequestException;
 import com.cowork.backend.common.ConflictException;
 import com.cowork.backend.common.ForbiddenException;
 import com.cowork.backend.common.NotFoundException;
-import com.cowork.backend.amenity.dto.AmenityDto;
 import com.cowork.backend.location.Location;
 import com.cowork.backend.location.LocationService;
 import com.cowork.backend.reservation.dto.AvailabilityElement;
@@ -210,8 +209,7 @@ public class ReservationService {
                             w.getMaxHours(),
                             w.getMaxDays(),
                             w.getMaxMonths(),
-                            w.getCurrency(),
-                            w.getAmenities().stream().map(AmenityDto::from).toList());
+                            w.getCurrency());
                 })
                 .toList();
 

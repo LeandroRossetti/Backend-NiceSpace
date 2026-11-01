@@ -14,7 +14,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             + "join fetch r.workspace w "
             + "join fetch w.location loc "
             + "join fetch r.createdBy u "
-            + "left join fetch r.team t ";
+            + "left join fetch r.team t "
+            + "left join fetch r.payment p ";
 
     @Query(FETCH + "where r.createdBy.id = :userId order by r.startTime desc")
     List<Reservation> findMineOwn(@Param("userId") Long userId);
@@ -36,6 +37,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                         @Param("cancelled") ReservationStatus cancelled,
                                         @Param("start") Instant start,
                                         @Param("end") Instant end);
+
+    @Query("""
+            select r.workspace.id from Reservation r
+            where r.workspace.location.id in :locationIds
+              and r.status <> :cancelled
+              and r.startTime < :end
+              and r.endTime > :start
+            """)
+    List<Long> findOccupiedWorkspaceIdsInLocations(@Param("locationIds") Collection<Long> locationIds,
+                                                   @Param("cancelled") ReservationStatus cancelled,
+                                                   @Param("start") Instant start,
+                                                   @Param("end") Instant end);
 
     @Query("""
             select count(r) from Reservation r

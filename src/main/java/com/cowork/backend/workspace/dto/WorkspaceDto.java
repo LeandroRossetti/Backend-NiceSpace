@@ -1,12 +1,10 @@
 package com.cowork.backend.workspace.dto;
 
-import com.cowork.backend.amenity.dto.AmenityDto;
 import com.cowork.backend.workspace.Workspace;
 import com.cowork.backend.workspace.WorkspaceType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 
 public record WorkspaceDto(
         Long id,
@@ -27,8 +25,7 @@ public record WorkspaceDto(
         Integer maxMonths,
         String currency,
         Boolean isActive,
-        Instant createdAt,
-        List<AmenityDto> amenities
+        Instant createdAt
 ) {
 
     public static WorkspaceDto from(Workspace workspace) {
@@ -51,9 +48,6 @@ public record WorkspaceDto(
                 workspace.getMaxMonths(),
                 workspace.getCurrency(),
                 workspace.getIsActive(),
-                workspace.getCreatedAt(),
-                workspace.getAmenities().stream()
-                        .map(AmenityDto::from)
-                        .toList());
+                workspace.getCreatedAt());
     }
 }

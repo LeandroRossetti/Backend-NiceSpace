@@ -1,5 +1,6 @@
 package com.cowork.backend.location;
 
+import com.cowork.backend.amenity.Amenity;
 import com.cowork.backend.user.User;
 import com.cowork.backend.workspace.Floor;
 import com.cowork.backend.workspace.Workspace;
@@ -10,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -24,7 +27,9 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "locations")
@@ -93,6 +98,14 @@ public class Location {
     @OneToMany(mappedBy = "location")
     @Builder.Default
     private List<Workspace> workspaces = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "location_amenities",
+            joinColumns = @JoinColumn(name = "location_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+    @Builder.Default
+    private Set<Amenity> amenities = new HashSet<>();
 
     @PrePersist
     void onCreate() {
