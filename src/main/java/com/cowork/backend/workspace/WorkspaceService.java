@@ -1,7 +1,5 @@
 package com.cowork.backend.workspace;
 
-import com.cowork.backend.amenity.Amenity;
-import com.cowork.backend.amenity.AmenityRepository;
 import com.cowork.backend.common.NotFoundException;
 import com.cowork.backend.location.Location;
 import com.cowork.backend.location.LocationService;
@@ -11,24 +9,19 @@ import com.cowork.backend.workspace.dto.WorkspaceUpdateRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
-    private final AmenityRepository amenityRepository;
     private final LocationService locationService;
     private final FloorService floorService;
 
     public WorkspaceService(WorkspaceRepository workspaceRepository,
-                            AmenityRepository amenityRepository,
                             LocationService locationService,
                             FloorService floorService) {
         this.workspaceRepository = workspaceRepository;
-        this.amenityRepository = amenityRepository;
         this.locationService = locationService;
         this.floorService = floorService;
     }
@@ -73,7 +66,6 @@ public class WorkspaceService {
                 .currency(request.currency() == null ? "ARS" : request.currency())
                 .isActive(request.isActive() == null || request.isActive())
                 .build();
-        workspace.setAmenities(resolveAmenities(request.amenityIds()));
         return WorkspaceDto.from(workspaceRepository.save(workspace));
     }
 
@@ -105,7 +97,6 @@ public class WorkspaceService {
         if (request.floorId() != null) {
             workspace.setFloor(floorService.findOwnedFloor(workspace.getLocation().getId(), request.floorId()));
         }
-        workspace.setAmenities(resolveAmenities(request.amenityIds()));
         return WorkspaceDto.from(workspaceRepository.save(workspace));
     }
 
@@ -123,17 +114,5 @@ public class WorkspaceService {
 
     public void assertOwner(Workspace workspace) {
         locationService.assertOwner(workspace.getLocation());
-    }
-
-    private Set<Amenity> resolveAmenities(List<Long> amenityIds) {
-        if (amenityIds == null || amenityIds.isEmpty()) {
-            return new HashSet<>();
-        }
-        Set<Long> uniqueIds = new HashSet<>(amenityIds);
-        List<Amenity> amenities = amenityRepository.findAllById(uniqueIds);
-        if (amenities.size() != uniqueIds.size()) {
-            throw new NotFoundException("Una o más amenities no existen");
-        }
-        return new HashSet<>(amenities);
     }
 }
