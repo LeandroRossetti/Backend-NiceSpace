@@ -11,8 +11,8 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     String FETCH = "select r from Reservation r "
-            + "join fetch r.resource sr "
-            + "join fetch sr.workspace w "
+            + "join fetch r.workspace w "
+            + "join fetch w.location loc "
             + "join fetch r.createdBy u "
             + "left join fetch r.team t ";
 
@@ -22,29 +22,29 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query(FETCH + "where r.createdBy.id = :userId or r.team.id in :teamIds order by r.startTime desc")
     List<Reservation> findMineWithTeams(@Param("userId") Long userId, @Param("teamIds") Collection<Long> teamIds);
 
-    @Query(FETCH + "where sr.workspace.id = :workspaceId order by r.startTime desc")
-    List<Reservation> findByWorkspace(@Param("workspaceId") Long workspaceId);
+    @Query(FETCH + "where w.location.id = :locationId order by r.startTime desc")
+    List<Reservation> findByLocation(@Param("locationId") Long locationId);
 
     @Query("""
-            select r.resource.id from Reservation r
-            where r.resource.workspace.id = :workspaceId
+            select r.workspace.id from Reservation r
+            where r.workspace.location.id = :locationId
               and r.status <> :cancelled
               and r.startTime < :end
               and r.endTime > :start
             """)
-    List<Long> findOccupiedResourceIds(@Param("workspaceId") Long workspaceId,
-                                       @Param("cancelled") ReservationStatus cancelled,
-                                       @Param("start") Instant start,
-                                       @Param("end") Instant end);
+    List<Long> findOccupiedWorkspaceIds(@Param("locationId") Long locationId,
+                                        @Param("cancelled") ReservationStatus cancelled,
+                                        @Param("start") Instant start,
+                                        @Param("end") Instant end);
 
     @Query("""
             select count(r) from Reservation r
-            where r.resource.id = :resourceId
+            where r.workspace.id = :workspaceId
               and r.status <> :cancelled
               and r.startTime < :end
               and r.endTime > :start
             """)
-    long countOverlapping(@Param("resourceId") Long resourceId,
+    long countOverlapping(@Param("workspaceId") Long workspaceId,
                           @Param("cancelled") ReservationStatus cancelled,
                           @Param("start") Instant start,
                           @Param("end") Instant end);

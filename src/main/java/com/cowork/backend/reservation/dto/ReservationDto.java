@@ -1,17 +1,21 @@
 package com.cowork.backend.reservation.dto;
 
+import com.cowork.backend.reservation.RentalType;
 import com.cowork.backend.reservation.Reservation;
 import com.cowork.backend.reservation.ReservationStatus;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record ReservationDto(
         Long id,
-        Long resourceId,
-        String resourceName,
-        String resourceType,
         Long workspaceId,
         String workspaceName,
+        String workspaceType,
+        Long locationId,
+        String locationName,
+        RentalType rentalType,
+        BigDecimal totalPrice,
         Instant startTime,
         Instant endTime,
         ReservationStatus status,
@@ -24,11 +28,13 @@ public record ReservationDto(
     public static ReservationDto from(Reservation r) {
         return new ReservationDto(
                 r.getId(),
-                r.getResource().getId(),
-                r.getResource().getNombre(),
-                r.getResource().getTipo().name(),
-                r.getResource().getWorkspace().getId(),
-                r.getResource().getWorkspace().getNombre(),
+                r.getWorkspace().getId(),
+                r.getWorkspace().getNombre(),
+                r.getWorkspace().getWorkspaceType().name(),
+                r.getWorkspace().getLocation().getId(),
+                r.getWorkspace().getLocation().getNombre(),
+                r.getRentalType(),
+                r.getTotalPrice(),
                 r.getStartTime(),
                 r.getEndTime(),
                 r.getStatus(),

@@ -1,29 +1,36 @@
 package com.cowork.backend.workspace;
 
-import com.cowork.backend.common.ForbiddenException;
+import com.cowork.backend.amenity.Amenity;
+import com.cowork.backend.amenity.AmenityRepository;
 import com.cowork.backend.common.NotFoundException;
-import com.cowork.backend.security.AuthHelper;
-import com.cowork.backend.user.AccountType;
-import com.cowork.backend.user.User;
+import com.cowork.backend.location.Location;
+import com.cowork.backend.location.LocationService;
 import com.cowork.backend.workspace.dto.CreateWorkspaceRequest;
-import com.cowork.backend.workspace.dto.UpdateMapRequest;
 import com.cowork.backend.workspace.dto.WorkspaceDto;
+import com.cowork.backend.workspace.dto.WorkspaceUpdateRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
-    private final FloorRepository floorRepository;
-    private final AuthHelper authHelper;
+    private final AmenityRepository amenityRepository;
+    private final LocationService locationService;
+    private final FloorService floorService;
 
-    public WorkspaceService(WorkspaceRepository workspaceRepository, FloorRepository floorRepository, AuthHelper authHelper) {
+    public WorkspaceService(WorkspaceRepository workspaceRepository,
+                            AmenityRepository amenityRepository,
+                            LocationService locationService,
+                            FloorService floorService) {
         this.workspaceRepository = workspaceRepository;
-        this.floorRepository = floorRepository;
-        this.authHelper = authHelper;
+        this.amenityRepository = amenityRepository;
+        this.locationService = locationService;
+        this.floorService = floorService;
     }
 
     @Transactional(readOnly = true)
@@ -32,9 +39,9 @@ public class WorkspaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<WorkspaceDto> mine() {
-        User user = authHelper.currentUser();
-        return workspaceRepository.findByOwnerIdOrderByCreatedAtDesc(user.getId()).stream()
+    public List<WorkspaceDto> listByLocation(Long locationId) {
+        locationService.findOrThrow(locationId);
+        return workspaceRepository.findByLocationIdOrderByIdAsc(locationId).stream()
                 .map(WorkspaceDto::from)
                 .toList();
     }
@@ -45,47 +52,88 @@ public class WorkspaceService {
     }
 
     @Transactional
-    public WorkspaceDto create(CreateWorkspaceRequest request) {
-        User user = authHelper.currentUser();
-        if (user.getAccountType() != AccountType.OWNER) {
-            throw new ForbiddenException("Solo los dueños de espacios pueden crear workspaces");
-        }
+    public WorkspaceDto create(Long locationId, CreateWorkspaceRequest request) {
+        Location location = locationService.findOrThrow(locationId);
+        locationService.assertOwner(location);
+        Floor floor = request.floorId() == null
+                ? null
+                : floorService.findOwnedFloor(locationId, request.floorId());
         Workspace workspace = Workspace.builder()
                 .nombre(request.nombre())
-                .owner(user)
-                .mapStructure(null)
+                .location(location)
+                .floor(floor)
+                .workspaceType(request.workspaceType())
+                .capacity(request.capacity())
+                .pricePerHour(request.pricePerHour())
+                .pricePerDay(request.pricePerDay())
+                .pricePerMonth(request.pricePerMonth())
+                .maxHours(request.maxHours() == null ? 24 : request.maxHours())
+                .maxDays(request.maxDays() == null ? 30 : request.maxDays())
+                .maxMonths(request.maxMonths() == null ? 12 : request.maxMonths())
+                .currency(request.currency() == null ? "ARS" : request.currency())
+                .isActive(request.isActive() == null || request.isActive())
                 .build();
-        Workspace saved = workspaceRepository.save(workspace);
-        floorRepository.save(Floor.builder()
-                .workspace(saved)
-                .nombre("Piso 1")
-                .levelOrder(1)
-                .mapStructure("{\"elements\":[]}")
-                .build());
-        return WorkspaceDto.from(saved);
+        workspace.setAmenities(resolveAmenities(request.amenityIds()));
+        return WorkspaceDto.from(workspaceRepository.save(workspace));
     }
 
     @Transactional
-    public WorkspaceDto updateMap(Long id, UpdateMapRequest request) {
+    public WorkspaceDto update(Long id, WorkspaceUpdateRequest request) {
         Workspace workspace = findOrThrow(id);
         assertOwner(workspace);
-        workspace.setMapStructure(request.mapStructure());
-        floorRepository.findFirstByWorkspaceIdOrderByLevelOrderAsc(id).ifPresent(floor -> {
-            floor.setMapStructure(request.mapStructure());
-            floorRepository.save(floor);
-        });
+        workspace.setNombre(request.nombre());
+        workspace.setWorkspaceType(request.workspaceType());
+        workspace.setCapacity(request.capacity());
+        workspace.setPricePerHour(request.pricePerHour());
+        workspace.setPricePerDay(request.pricePerDay());
+        workspace.setPricePerMonth(request.pricePerMonth());
+        if (request.maxHours() != null) {
+            workspace.setMaxHours(request.maxHours());
+        }
+        if (request.maxDays() != null) {
+            workspace.setMaxDays(request.maxDays());
+        }
+        if (request.maxMonths() != null) {
+            workspace.setMaxMonths(request.maxMonths());
+        }
+        if (request.currency() != null) {
+            workspace.setCurrency(request.currency());
+        }
+        if (request.isActive() != null) {
+            workspace.setIsActive(request.isActive());
+        }
+        if (request.floorId() != null) {
+            workspace.setFloor(floorService.findOwnedFloor(workspace.getLocation().getId(), request.floorId()));
+        }
+        workspace.setAmenities(resolveAmenities(request.amenityIds()));
         return WorkspaceDto.from(workspaceRepository.save(workspace));
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Workspace workspace = findOrThrow(id);
+        assertOwner(workspace);
+        workspaceRepository.delete(workspace);
     }
 
     public Workspace findOrThrow(Long id) {
         return workspaceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Workspace no encontrado"));
+                .orElseThrow(() -> new NotFoundException("Espacio no encontrado"));
     }
 
     public void assertOwner(Workspace workspace) {
-        User user = authHelper.currentUser();
-        if (!workspace.getOwner().getId().equals(user.getId())) {
-            throw new ForbiddenException("No tienes permisos sobre este workspace");
+        locationService.assertOwner(workspace.getLocation());
+    }
+
+    private Set<Amenity> resolveAmenities(List<Long> amenityIds) {
+        if (amenityIds == null || amenityIds.isEmpty()) {
+            return new HashSet<>();
         }
+        Set<Long> uniqueIds = new HashSet<>(amenityIds);
+        List<Amenity> amenities = amenityRepository.findAllById(uniqueIds);
+        if (amenities.size() != uniqueIds.size()) {
+            throw new NotFoundException("Una o más amenities no existen");
+        }
+        return new HashSet<>(amenities);
     }
 }
