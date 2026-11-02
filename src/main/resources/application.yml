@@ -22,6 +22,17 @@ spring:
     multipart:
       max-file-size: 35MB
       max-request-size: 35MB
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: ${PORT:8080}
@@ -43,5 +54,9 @@ app:
     # Access token de prueba (sandbox). Blank deshabilita los pagos.
     access-token: ${MERCADOPAGO_ACCESS_TOKEN:}
     base-url: ${MERCADOPAGO_BASE_URL:https://api.mercadopago.com}
+  mail:
+    # Envío de mails transaccionales con Gmail SMTP. Blank deshabilita el envío.
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:}
   # URL pública del frontend usada como back_url de Mercado Pago.
   frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}

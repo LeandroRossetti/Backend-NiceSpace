@@ -4,6 +4,7 @@ import com.cowork.backend.common.BadRequestException;
 import com.cowork.backend.common.ConflictException;
 import com.cowork.backend.common.ForbiddenException;
 import com.cowork.backend.common.NotFoundException;
+import com.cowork.backend.mail.MailService;
 import com.cowork.backend.payment.dto.ConfirmPaymentRequest;
 import com.cowork.backend.payment.dto.PaymentDto;
 import com.cowork.backend.payment.mercadopago.MercadoPagoClient;
@@ -26,6 +27,7 @@ public class PaymentService {
     private final TeamMemberRepository teamMemberRepository;
     private final AuthHelper authHelper;
     private final MercadoPagoClient mercadoPagoClient;
+    private final MailService mailService;
     private final String frontendUrl;
 
     public PaymentService(PaymentRepository paymentRepository,
@@ -33,12 +35,14 @@ public class PaymentService {
                           TeamMemberRepository teamMemberRepository,
                           AuthHelper authHelper,
                           MercadoPagoClient mercadoPagoClient,
+                          MailService mailService,
                           @Value("${app.frontend-url:http://localhost:5173}") String frontendUrl) {
         this.paymentRepository = paymentRepository;
         this.reservationRepository = reservationRepository;
         this.teamMemberRepository = teamMemberRepository;
         this.authHelper = authHelper;
         this.mercadoPagoClient = mercadoPagoClient;
+        this.mailService = mailService;
         this.frontendUrl = frontendUrl;
     }
 
@@ -101,6 +105,8 @@ public class PaymentService {
         Payment payment = paymentRepository.findByReservationId(request.reservationId())
                 .orElseThrow(() -> new NotFoundException("No hay un pago iniciado para esta reserva"));
 
+        boolean wasAlreadyPaid = payment.getStatus() == PaymentStatus.PAID;
+
         String mpStatus = mercadoPagoClient.getPaymentStatus(request.paymentId());
 
         PaymentStatus newStatus = switch (mpStatus) {
@@ -111,7 +117,13 @@ public class PaymentService {
 
         payment.setPaymentId(request.paymentId());
         payment.setStatus(newStatus);
-        return PaymentDto.from(paymentRepository.save(payment));
+        Payment saved = paymentRepository.save(payment);
+
+        if (newStatus == PaymentStatus.PAID && !wasAlreadyPaid) {
+            mailService.sendPaymentConfirmation(user, reservation, saved);
+        }
+
+        return PaymentDto.from(saved);
     }
 
     private void assertCanPay(User user, Reservation reservation) {
