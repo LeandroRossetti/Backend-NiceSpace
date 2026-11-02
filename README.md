@@ -2,7 +2,7 @@
 
 API REST para la gestión de espacios de coworking: sedes, pisos, espacios alquilables, disponibilidad, reservas, equipos y amenities.
 
-> **Nombre del producto:** OpenSpot (antes NiceSpace). El código conserva identificadores legacy como `com.cowork.backend`, `cowork-backend` y la base `cowork` por compatibilidad. No es necesario renombrarlos para trabajar en el proyecto.
+> **Nombre del producto:** OpenSpot. El código conserva identificadores legacy como `com.cowork.backend`, `cowork-backend` y la base `cowork` por compatibilidad. No es necesario renombrarlos para trabajar en el proyecto.
 
 ---
 
@@ -369,7 +369,7 @@ No hay `Dockerfile` en el repositorio; el `docker-compose.yml` solo levanta Post
 ## Documentación adicional
 
 - **Contexto completo del proyecto (back + front):** `../CONTEXTO-OPENSPOT.md`, en la carpeta raíz que contiene ambos repositorios.
-- **Frontend:** [github.com/LeandroRossetti/Frontend-NiceSpace](https://github.com/LeandroRossetti/Frontend-NiceSpace)
+- **Frontend:** [github.com/LeandroRossetti/Frontend-OpenSpot](https://github.com/LeandroRossetti/Frontend-OpenSpot)
 
 ---
 
