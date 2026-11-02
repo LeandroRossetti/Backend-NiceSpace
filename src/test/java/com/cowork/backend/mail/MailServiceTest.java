@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +30,9 @@ import java.time.Instant;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,6 +86,17 @@ class MailServiceTest {
         mailService.sendPaymentConfirmation(withoutEmail, reservation(), payment());
 
         verify(mailSender, never()).send(any(MimeMessage.class));
+    }
+
+    @Test
+    void swallowsMailExceptionWhenSendFails() {
+        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getInstance(new Properties())));
+        doThrow(new MailSendException("smtp down")).when(mailSender).send(any(MimeMessage.class));
+
+        MailService mailService = new MailService(mailSender, "noreply@openspot.app", true);
+
+        assertThatCode(() -> mailService.sendPaymentConfirmation(user(), reservation(), payment()))
+                .doesNotThrowAnyException();
     }
 
     private MimeMessage reparse(MimeMessage message) throws Exception {

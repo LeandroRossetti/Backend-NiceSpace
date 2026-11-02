@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class MailService {
             helper.addInline("openspot-logo", new ClassPathResource("mail/openspot-logo.png"));
             mailSender.send(message);
             log.info("Mail de confirmación de pago enviado a {}", recipient.getEmail());
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
             log.error("No se pudo enviar el mail de confirmación de pago a {}", recipient.getEmail(), e);
         }
     }
