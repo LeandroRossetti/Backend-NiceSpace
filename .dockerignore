@@ -1,0 +1,16 @@
+# Secretos y configuración local: nunca deben entrar al build
+.env
+
+# Artefactos de build previo
+target/
+
+# Repo y tooling que la imagen no necesita
+.git/
+.gitignore
+.mvn/
+mvnw
+mvnw.cmd
+*.md
+docker-compose.yml
+Dockerfile
+.dockerignore
